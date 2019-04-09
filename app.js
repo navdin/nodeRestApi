@@ -7,5 +7,10 @@ app.use(function(req, res, next){
     });
 
 });
+var obj={
 
+    name:'dinesh',
+    job:'jobless'
+};
 module.exports=app;
+module.exports=obj;
