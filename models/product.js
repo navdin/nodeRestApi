@@ -4,7 +4,8 @@ const productSchema=mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     name:String,
     price:Number,
-    type:String
+    type:String,
+    imagePath: String
 });
 
 // const productDetailSchema=mongoose.Schema({

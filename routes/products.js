@@ -4,9 +4,22 @@ const prod=require('../models/product');
 const mongoose=require('mongoose');
 const orderRoutes=require('./orders');
 console.log('came to products.js');
+const multer=require('multer');
+const storage=multer.diskStorage({
+    destination: function(req, file, cb){
+       // console.log(file);
+        cb(null, './uploads/');
+    },
+    filename: function(req, file, cb){
+        cb(null, new Date().toISOString()+file.originalname);
+    }
+});
+const fileFilter=function(req, file, cb){
+    cb(null, true);
+    //cb(null, false);
 
-
-
+}
+const upload=multer({storage: storage, fileFilter: fileFilter});
 router.get('/:productId', function(req, res, next){
 
 
@@ -24,6 +37,7 @@ router.get('/:productId', function(req, res, next){
                     productId:doc._id,
                     name: doc.name,
                     price: doc.price,
+                    imagePath: doc.imagePath,
                     request: 'GET',
                     url: 'localhost:3000/products/'+doc._id
                 }
@@ -70,6 +84,7 @@ router.get('/', function(req, res, next){
                     productId:doc._id,
                     name: doc.name,
                     price: doc.price,
+                    imagePath: doc.imagePath,
                     request: 'GET',
                     url: 'localhost:3000/products/'+doc._id
                 }
@@ -95,13 +110,15 @@ router.get('/', function(req, res, next){
    //next(error);
 });
 
-router.post('/add', function(req, res, next){
+router.post('/add', upload.any(), function(req, res, next){
     const prodOb=new prod({
         _id:new mongoose.Types.ObjectId(),
         name:req.body.name,
-        price:req.body.price
+        price:req.body.price,
+        imagePath: req.files[0].path
     });
-    //console.log('came to post method');
+    
+    console.log(req.files);
     prodOb.save().then(function(result){
         console.log(result);
         res.status(200).json({
@@ -124,16 +141,21 @@ router.post('/add', function(req, res, next){
 
 });
 
-router.patch('/:productId', function(req, res, next){
+router.patch('/:productId', upload.single('image'), function(req, res, next){
     const updateOps={};
 
     const reqBody=req.body;
     console.log(reqBody);
 
-    for(const op of reqBody){
-        //console.log("op="+op+", op.key="+op.key+", op.value="+op.value);
-        updateOps[op.key]=op.value;
+    if(!reqBody === undefined){
+        for(const op of reqBody){
+            //console.log("op="+op+", op.key="+op.key+", op.value="+op.value);
+            updateOps[op.key]=op.value;
+        }
     }
+    console.log(req.file);
+
+    updateOps.imagePath=req.file.path;
     console.log(updateOps);
     console.log(req.params.productId);
 
